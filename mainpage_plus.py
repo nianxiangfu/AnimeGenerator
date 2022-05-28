@@ -11,6 +11,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from Relabel import MyLabel
 from ReRadio import MyRadio
+from PIL import Image
+import numpy as np
 
 
 
@@ -49,7 +51,7 @@ class Ui_MainWindow(object):
         self.pushButton.setGeometry(QtCore.QRect(130, 160, 93, 28))
         self.pushButton.setObjectName("pushButton")
 
-        self.pushButton.clicked.connect(self.generation)
+        self.pushButton.clicked.connect(self.generate1)
 
         self.picture_7 = MyLabel(self.groupBox_4)
         self.picture_7.setGeometry(QtCore.QRect(380, 530, 151, 151))
@@ -198,6 +200,9 @@ class Ui_MainWindow(object):
         self.to_another_2.clicked.connect(lambda: self.to_show(2))
         self.groupBox_5.hide()
 
+        self.picturebox = [self.picture_1,self.picture_2,self.picture_3,self.picture_4,
+            self.picture_5,self.picture_6,self.picture_7,self.picture_8,self.picture_9]
+
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
@@ -244,11 +249,39 @@ class Ui_MainWindow(object):
         self.pushButton_2.setText(_translate("MainWindow", "上传"))
         self.pushButton_3.setText(_translate("MainWindow", "转换->"))
         self.pushButton_4.setText(_translate("MainWindow", "保存"))
-
-    def generation(self):
+    """
+        生成图片--
+            parameter1: 头发颜色编码   编码见下方type_transform  
+            parameter2:  眼睛颜色编码
+    """
+    def generate1(self):
         print("申奥成功了")   
-        print("select_1"+self.select_1)
-        print("select_2"+self.select_2)
+        parameter1 = self.type_transform(self.select_1)
+        parameter2 = self.type_transform(self.select_2)
+        # 此处填写接口调用
+        # ---------------------
+
+
+        
+        # ---------------------
+        print("parameter1"+parameter1)
+        print("parameter2"+parameter2)
+
+    def type_transform(self,type):
+        switch = {
+            '浅绿色':lambda: 1,
+            '黑色':lambda: 2,
+            '金黄色':lambda: 3,
+            '蓝色':lambda: 4,
+            '棕黄色':lambda: 5,
+            '灰色':lambda: 6,
+            '绿色':lambda: 7,
+            '橘黄色':lambda: 8, 
+            '粉色':lambda: 9,
+            '紫色':lambda: 10,
+            '红色':lambda: 11,
+            '白色':lambda: 12 }
+        return switch(type)
 
     def to_show(self,type):
         if(type == 1):
@@ -257,3 +290,11 @@ class Ui_MainWindow(object):
         else:
             self.groupBox_4.hide()
             self.groupBox_5.show()
+    
+    # 结果处理
+    """
+        参数list   为9张图片的numpy形式
+            格式暂定
+    """
+    def result_process(self,list):
+        self.picturebox[0].img_show(list)
