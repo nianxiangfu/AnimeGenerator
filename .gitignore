@@ -8,3 +8,5 @@ ugatit/checkpoint/
 ugatit/dataset/
 ugatit/results/
 ugatit/__pycache__
+
+wgan/checkpoint/
