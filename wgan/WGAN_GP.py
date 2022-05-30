@@ -7,7 +7,7 @@ import numpy as np
 import random 
 
 # from ops import *
-from utils import *
+from wgan.utils import *
 
 slim = tf.contrib.slim
 layers = tf.contrib.layers
@@ -450,6 +450,8 @@ class WGAN_GP(object):
             print(" [*] Load SUCCESS")
         else:
             print(" [!] Load failed...")
+        
+        return samples
             
 
     @property

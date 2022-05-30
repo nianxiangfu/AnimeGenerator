@@ -1,13 +1,15 @@
-from UGATIT import UGATIT
+from ugan.UGATIT import UGATIT
 import argparse
-from utils import *
+from ugan.utils import *
+import cv2
+import numpy as np
 
 """parsing and configuration"""
 
 def parse_args():
     desc = "Tensorflow implementation of U-GAT-IT"
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument('--phase', type=str, default='train', help='[train / test]')
+    parser.add_argument('--phase', type=str, default='test', help='[train / test]')
     parser.add_argument('--light', type=str2bool, default=False, help='[U-GAT-IT full version / U-GAT-IT light version]')
     parser.add_argument('--dataset', type=str, default='selfie2anime', help='dataset_name')
 
@@ -39,13 +41,13 @@ def parse_args():
     parser.add_argument('--img_ch', type=int, default=3, help='The size of image channel')
     parser.add_argument('--augment_flag', type=str2bool, default=True, help='Image augmentation use or not')
 
-    parser.add_argument('--checkpoint_dir', type=str, default='checkpoint',
+    parser.add_argument('--checkpoint_dir', type=str, default='./ugan/checkpoint',
                         help='Directory name to save the checkpoints')
-    parser.add_argument('--result_dir', type=str, default='results',
+    parser.add_argument('--result_dir', type=str, default='./ugan/results',
                         help='Directory name to save the generated images')
-    parser.add_argument('--log_dir', type=str, default='logs',
+    parser.add_argument('--log_dir', type=str, default='./ugan/logs',
                         help='Directory name to save training logs')
-    parser.add_argument('--sample_dir', type=str, default='samples',
+    parser.add_argument('--sample_dir', type=str, default='./ugan/samples',
                         help='Directory name to save the samples on training')
 
     return check_args(parser.parse_args())
@@ -101,6 +103,33 @@ def main():
         if args.phase == 'test' :
             gan.test()
             print(" [*] Test finished!")
+
+
+class UGAN:
+    def __init__(self,sess):
+        self.gan = None
+        self.sess = sess
+        self.args = parse_args()
+
+    def build_model(self):
+        if self.args is None:
+            exit()
+        self.gan = UGATIT(self.sess, self.args)
+        # build graph
+        self.gan.build_model()
+        # show network architecture
+        show_all_variables()
+
+    def generate(self,img):
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = cv2.resize(img, dsize=(self.args.img_size, self.args.img_size))
+        img = np.expand_dims(img, axis=0)
+        img = img/127.5 - 1
+        fake_img = self.gan.generate(img)
+        fake_img = inverse_transform(fake_img)
+        fake_img = np.array(fake_img).astype(np.uint8)
+        return fake_img
+
 
 if __name__ == '__main__':
     main()

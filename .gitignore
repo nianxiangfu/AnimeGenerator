@@ -4,9 +4,13 @@ __pycache__
 #  脚本文件
 *.bat
 
-ugatit/checkpoint/
-ugatit/dataset/
-ugatit/results/
-ugatit/__pycache__
+ugan/checkpoint/
+ugan/dataset/
+ugan/results/
+ugan/logs/
+ugan/samples/
+ugan/__pycache__
 
 wgan/checkpoint/
+
+test.py

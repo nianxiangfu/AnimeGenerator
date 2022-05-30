@@ -1,5 +1,5 @@
-from ops import *
-from utils import *
+from ugan.ops import *
+from ugan.utils import *
 from glob import glob
 import time
 from tensorflow.contrib.data import prefetch_to_device, shuffle_and_repeat, map_and_batch
@@ -610,6 +610,19 @@ class UGATIT(object) :
         else:
             print(" [*] Failed to find a checkpoint")
             return False, 0
+
+    def generate(self,sample_image):
+        tf.global_variables_initializer().run()
+        self.saver = tf.train.Saver()
+        could_load, checkpoint_counter = self.load(self.checkpoint_dir)
+        if could_load:
+            print(" [*] Load SUCCESS")
+        else :
+            print(" [!] Load failed...")
+
+        fake_img = self.sess.run(self.test_fake_B, feed_dict={
+                                 self.test_domain_A: sample_image})
+        return fake_img
 
     def test(self):
         tf.global_variables_initializer().run()

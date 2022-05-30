@@ -7,7 +7,7 @@ import os
 # from ACGAN import ACGAN
 # from EBGAN import EBGAN
 # from WGAN import WGAN
-from WGAN_GP import WGAN_GP
+from wgan.WGAN_GP import WGAN_GP
 # from DRAGAN import DRAGAN
 # from LSGAN import LSGAN
 # from BEGAN import BEGAN
@@ -16,8 +16,9 @@ from WGAN_GP import WGAN_GP
 # from VAE import VAE
 # from CVAE import CVAE
 
-from utils import show_all_variables
-from utils import check_folder
+from wgan.utils import show_all_variables
+from wgan.utils import check_folder
+from wgan.utils import inverse_transform
 
 import tensorflow as tf
 import argparse
@@ -29,21 +30,21 @@ def parse_args():
     desc = "Tensorflow implementation of GAN collections"
     parser = argparse.ArgumentParser(description=desc)
 
-    parser.add_argument('--gan_type', type=str, default='GAN',
+    parser.add_argument('--gan_type', type=str, default='WGAN_GP',
                         choices=['GAN', 'CGAN', 'infoGAN', 'ACGAN', 'EBGAN', 'BEGAN', 'WGAN', 'WGAN_GP', 'DRAGAN', 'LSGAN', 'VAE', 'CVAE'],
-                        help='The type of GAN', required=True)
-    parser.add_argument('--dataset', type=str, default='mnist', choices=['mnist', 'fashion-mnist', 'celebA', 'Anime'],
+                        help='The type of GAN', required=False)
+    parser.add_argument('--dataset', type=str, default='Anime', choices=['mnist', 'fashion-mnist', 'celebA', 'Anime'],
                         help='The name of dataset')
-    parser.add_argument('--epoch', type=int, default=20, help='The number of epochs to run')
-    parser.add_argument('--batch_size', type=int, default=64, help='The size of batch')
-    parser.add_argument('--z_dim', type=int, default=62, help='Dimension of noise vector')
-    parser.add_argument('--checkpoint_dir', type=str, default='./hw3_2/checkpoint',
+    parser.add_argument('--epoch', type=int, default=200, help='The number of epochs to run')
+    parser.add_argument('--batch_size', type=int, default=128, help='The size of batch')
+    parser.add_argument('--z_dim', type=int, default=128, help='Dimension of noise vector')
+    parser.add_argument('--checkpoint_dir', type=str, default='./wgan/checkpoint',
                         help='Directory name to save the checkpoints')
     parser.add_argument('--result_dir', type=str, default='./hw3_2/results',
                         help='Directory name to save the generated images')
     parser.add_argument('--log_dir', type=str, default='./hw3_2/logs',
                         help='Directory name to save training logs')
-    parser.add_argument('--mode', type=str, default='train',
+    parser.add_argument('--mode', type=str, default='infer',
                         help='train or infer')
     parser.add_argument('--testing_tags', type=str, default='./AnimeDataset/sample_testing_text.txt',
                         help='train or infer')
@@ -71,6 +72,7 @@ def check_args(args):
     assert args.z_dim >= 1, 'dimension of noise vector must be larger than or equal to one'
 
     return args
+
 
 """main"""
 def main():
@@ -137,6 +139,55 @@ def main():
             # visualize learned generator
             gan.infer(test_labels)
             print(" [*] Infer finished!")
+
+class WGAN():
+    def __init__(self,sess):
+        self.gan = None
+        self.sess = sess
+        self.args = parse_args()
+
+    def build_model(self):
+        models = [WGAN_GP]
+        args = self.args
+        for model in models:
+            if args.gan_type == model.model_name:
+                self.gan = model(self.sess,
+                            epoch=args.epoch,
+                            batch_size=args.batch_size,
+                            z_dim=args.z_dim,
+                            dataset_name=args.dataset,
+                            checkpoint_dir=args.checkpoint_dir,
+                            result_dir=args.result_dir,
+                            log_dir=args.log_dir,
+                            mode=args.mode)
+        if self.gan is None:
+            raise Exception("[!] There is no option for " + args.gan_type)
+
+        # build graph
+        self.gan.build_model()
+
+        # show network architecture
+        show_all_variables()
+
+
+    def generate(self,a1, a2):
+        tag_dict = ['orange hair', 'white hair', 'aqua hair', 'gray hair', 'green hair', 'red hair', 'purple hair',
+                    'pink hair', 'blue hair', 'black hair', 'brown hair', 'blonde hair',
+                    'gray eyes', 'black eyes', 'orange eyes', 'pink eyes', 'yellow eyes',
+                    'aqua eyes', 'purple eyes', 'green eyes', 'brown eyes', 'red eyes', 'blue eyes']
+        labels = np.zeros(len(tag_dict))
+        labels[tag_dict.index(a1)] = 1
+        labels[tag_dict.index(a2)] = 1
+        labels = labels.reshape(1,-1)
+        print(labels)
+        labels = labels.repeat(self.args.batch_size,axis=0)
+
+        samples = self.gan.infer(labels)[:16]
+        samples = inverse_transform(samples)*255
+        samples = np.array(samples).astype(int)
+        return samples
+
+
 
 if __name__ == '__main__':
     main()
