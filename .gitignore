@@ -12,5 +12,8 @@ ugan/samples/
 ugan/__pycache__
 
 wgan/checkpoint/
+wgan/__pycache__/
 
 test.py
+
+hw3_2/

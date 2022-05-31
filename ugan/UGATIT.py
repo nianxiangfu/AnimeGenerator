@@ -613,7 +613,7 @@ class UGATIT(object) :
 
     def generate(self,sample_image):
         tf.global_variables_initializer().run()
-        self.saver = tf.train.Saver()
+        self.saver = tf.train.Saver(tf.global_variables())
         could_load, checkpoint_counter = self.load(self.checkpoint_dir)
         if could_load:
             print(" [*] Load SUCCESS")

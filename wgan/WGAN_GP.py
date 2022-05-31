@@ -421,6 +421,8 @@ class WGAN_GP(object):
         tf.set_random_seed(9487)
 
         # initialize all variables
+        # tf.global_variables_initializer().run(session=self.sess)
+        print("aaaaaaaaaa:",self.sess)
         tf.global_variables_initializer().run()
         
         # saver to save model
@@ -445,8 +447,8 @@ class WGAN_GP(object):
 
             samples = self.sess.run(self.fake_images, feed_dict={self.z: z_sample, self.y: test_labels})
 
-            save_images(samples[:image_frame_dim * image_frame_dim, :, :, :], [image_frame_dim, image_frame_dim],
-                        check_folder('./samples') + '/' + 'cgan.png')
+            #save_images(samples[:image_frame_dim * image_frame_dim, :, :, :], [image_frame_dim, image_frame_dim],
+            #            check_folder('./samples') + '/' + 'cgan.png')
             print(" [*] Load SUCCESS")
         else:
             print(" [!] Load failed...")

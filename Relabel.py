@@ -9,6 +9,7 @@ import cv2
 class MyLabel(QLabel):
     def __init__(self,centralwidget):
         super().__init__(centralwidget)
+        self.centralwidget = centralwidget
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.rightMenuShow)
         # image_path = './homework.png'
@@ -39,13 +40,16 @@ class MyLabel(QLabel):
     def img_store(self):
         # 不可选路径
         # assert self.imgStore, "此处无图片" 
-        cv2.imwrite(self.text()+'.jpg', self.imgStore)  # 保存图片
+        img = self.imgStore
+        img = np.array(img).astype(np.uint8)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        fname = QFileDialog.getSaveFileName(self.centralwidget,"save File",'.png')
+        cv2.imencode('.jpg', img)[1].tofile(fname[0])  # 保存图片
 
 
     def read_file(self):
         im = Image.open("./lbxx.jpeg")  
         im_array = np.array(im)  # 将图片转化为numpy数组
-        print(im_array)
         img_pil = Image.fromarray(np.uint8(im_array))
         img_pix = img_pil.toqpixmap().scaled(self.width(), self.height())
         self.setPixmap(img_pix)

@@ -15,7 +15,9 @@ from PyQt5.QtWidgets import *
 from Relabel import MyLabel
 from ReRadio import MyRadio
 from PIL import Image
-
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt
 
 
 class Ui_MainWindow(object):
@@ -210,6 +212,7 @@ class Ui_MainWindow(object):
         self.pushButton_4.clicked.connect(self.store_picture)
         self.pushButton_2.clicked.connect(self.upload_picture)
 
+        self.pushButton_3.clicked.connect(self.transform_picture)
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
@@ -265,29 +268,31 @@ class Ui_MainWindow(object):
     """
     def generate1(self):
         print("申奥成功了")   
-        # parameter1 = self.type_transform(self.select_1)
-        # parameter2 = self.type_transform(self.select_2)
-        # 此处填写接口调用
-        # ---------------------
-        result = self.wgan.generate(self.select_1+" hair",self.select_2+" eyes")    
-        # ---------------------
-        print(result)
+        with self.wgan.sess.as_default():
+            with self.wgan.sess.graph.as_default():
+                result = self.wgan.generate(self.type_transform(
+                self.select_1)+" hair", self.type_transform(self.select_2)+" eyes")
+        # ---------
+        count = 9
+        for i in range(count):
+            temp = result[i]
+            self.picturebox[i].img_show(temp)
 
     def type_transform(self,type):
         switch = {
-            '浅绿色':lambda: 1,
-            '黑色':lambda: 2,
-            '金黄色':lambda: 3,
-            '蓝色':lambda: 4,
-            '棕黄色':lambda: 5,
-            '灰色':lambda: 6,
-            '绿色':lambda: 7,
-            '橘黄色':lambda: 8, 
-            '粉色':lambda: 9,
-            '紫色':lambda: 10,
-            '红色':lambda: 11,
-            '白色':lambda: 12 }
-        return switch(type)
+            '浅绿色': "aqua",
+            '黑色': "black",
+            '金黄色': "blonde",
+            '蓝色': "blue",
+            '棕黄色': "brown",
+            '灰色': "gray",
+            '绿色': "green",
+            '橘黄色': "orange", 
+            '粉色': "pink",
+            '紫色': "purple",
+            '红色': "red",
+            '白色': "white"}
+        return switch[type]
 
     def to_show(self,type):
         if(type == 1):
@@ -297,23 +302,34 @@ class Ui_MainWindow(object):
             self.groupBox_4.hide()
             self.groupBox_5.show()
     
-    # 结果处理
-    """
-        参数list   为9张图片的numpy形式
-            格式暂定
-    """
-    def result_process(self,list):
-        self.picturebox[0].img_show(list)
 
     def upload_picture(self):
         fname = QFileDialog.getOpenFileName(self.centralwidget,"Open File","./","all *.*")
         if fname[0]:
-            sample = Image.open(fname[0])
             picture = QtGui.QPixmap(fname[0]).scaled(self.label.width(), self.label.height())
             self.label.setPixmap(picture)
+
+            sample = cv2.imdecode(np.fromfile(fname[0], np.uint8), 1)
+            # sample = np.array(sample).astype(np.uint8)       
             self.uploadSample = sample
     def store_picture(self):
-        return
+        img = self.imgStore
+        img = np.array(img).astype(np.uint8)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  
+        fname = QFileDialog.getSaveFileName(self.centralwidget,"save File",'风格迁移.png')
+        cv2.imencode('.jpg', img)[1].tofile(fname[0])  # 保存图片
+        # cv2.
     def transform_picture(self):
-        img = self.ugan.generate(self.uploadSample)[0]
-        print(img)
+        with self.ugan.sess.as_default():
+            with self.ugan.sess.graph.as_default():
+                imglist = self.ugan.generate(self.uploadSample)[0]
+        self.imgStore = imglist
+        print(type(imglist), imglist)
+        img_pil = Image.fromarray(np.uint8(imglist))
+        img_pix = img_pil.toqpixmap().scaled(self.label_2.width(), self.label_2.height())
+        self.label_2.setScaledContents(True)
+        self.label_2.setPixmap(img_pix)
+
+        
+        img = cv2.cvtColor(imglist, cv2.COLOR_BGR2RGB)
+        cv2.imshow('1',img)

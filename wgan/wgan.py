@@ -165,7 +165,6 @@ class WGAN():
 
         # build graph
         self.gan.build_model()
-
         # show network architecture
         show_all_variables()
 
@@ -181,7 +180,6 @@ class WGAN():
         labels = labels.reshape(1,-1)
         print(labels)
         labels = labels.repeat(self.args.batch_size,axis=0)
-
         samples = self.gan.infer(labels)[:16]
         samples = inverse_transform(samples)*255
         samples = np.array(samples).astype(int)
