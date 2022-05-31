@@ -93,7 +93,6 @@ class Ui_MainWindow(object):
     def showContextMenu(self, label, pos):
         #调整位置
         # 菜单显示前，将它移动到鼠标点击的位置
-
         label.popMenu.move(pos)
         label.popMenu.show()
 

@@ -9,6 +9,8 @@ with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
     samples = cv2.imread("ugan_test.jpg")
     print(samples)
     img = ugan.generate(samples)[0]
+
+    
     print(img)
     cv2.imshow("1", img)
     cv2.waitKey()

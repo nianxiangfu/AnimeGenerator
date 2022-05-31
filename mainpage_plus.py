@@ -9,10 +9,12 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 from Relabel import MyLabel
 from ReRadio import MyRadio
 from PIL import Image
-import numpy as np
 
 
 
@@ -20,6 +22,9 @@ class Ui_MainWindow(object):
     
     select_1 = 0
     select_2 = 0
+    def setupGan(self,ugan,wgan):
+        self.ugan = ugan
+        self.wgan = wgan
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1355, 912)
@@ -202,6 +207,8 @@ class Ui_MainWindow(object):
 
         self.picturebox = [self.picture_1,self.picture_2,self.picture_3,self.picture_4,
             self.picture_5,self.picture_6,self.picture_7,self.picture_8,self.picture_9]
+        self.pushButton_4.clicked.connect(self.store_picture)
+        self.pushButton_2.clicked.connect(self.upload_picture)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -249,6 +256,8 @@ class Ui_MainWindow(object):
         self.pushButton_2.setText(_translate("MainWindow", "上传"))
         self.pushButton_3.setText(_translate("MainWindow", "转换->"))
         self.pushButton_4.setText(_translate("MainWindow", "保存"))
+
+        
     """
         生成图片--
             parameter1: 头发颜色编码   编码见下方type_transform  
@@ -256,16 +265,13 @@ class Ui_MainWindow(object):
     """
     def generate1(self):
         print("申奥成功了")   
-        parameter1 = self.type_transform(self.select_1)
-        parameter2 = self.type_transform(self.select_2)
+        # parameter1 = self.type_transform(self.select_1)
+        # parameter2 = self.type_transform(self.select_2)
         # 此处填写接口调用
         # ---------------------
-
-
-        
+        result = self.wgan.generate(self.select_1+" hair",self.select_2+" eyes")    
         # ---------------------
-        print("parameter1"+parameter1)
-        print("parameter2"+parameter2)
+        print(result)
 
     def type_transform(self,type):
         switch = {
@@ -298,3 +304,16 @@ class Ui_MainWindow(object):
     """
     def result_process(self,list):
         self.picturebox[0].img_show(list)
+
+    def upload_picture(self):
+        fname = QFileDialog.getOpenFileName(self.centralwidget,"Open File","./","all *.*")
+        if fname[0]:
+            sample = Image.open(fname[0])
+            picture = QtGui.QPixmap(fname[0]).scaled(self.label.width(), self.label.height())
+            self.label.setPixmap(picture)
+            self.uploadSample = sample
+    def store_picture(self):
+        return
+    def transform_picture(self):
+        img = self.ugan.generate(self.uploadSample)[0]
+        print(img)
